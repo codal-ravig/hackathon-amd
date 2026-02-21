@@ -20,8 +20,8 @@ export default function CampaignNotFound() {
           position: 'fixed',
           inset: 0,
           backgroundImage:
-            'linear-gradient(rgba(230,51,41,0.04) 1px, transparent 1px),' +
-            'linear-gradient(90deg, rgba(230,51,41,0.04) 1px, transparent 1px)',
+            'linear-gradient(rgba(230,51,41,0.03) 1px, transparent 1px),' +
+            'linear-gradient(90deg, rgba(230,51,41,0.03) 1px, transparent 1px)',
           backgroundSize: '52px 52px',
           pointerEvents: 'none',
         }}
@@ -56,14 +56,18 @@ export default function CampaignNotFound() {
             fontFamily: 'var(--font-mono), monospace',
             fontSize: 10,
             letterSpacing: '0.22em',
-            color: 'var(--red)',
+            color: 'var(--text)',
+            background: 'rgba(255,255,255,0.8)',
+            backdropFilter: 'blur(8px)',
             textTransform: 'uppercase',
             textDecoration: 'none',
-            border: '1px solid rgba(230,51,41,0.4)',
+            border: '1px solid rgba(0,0,0,0.08)',
             padding: '12px 28px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+            transition: 'all 0.2s ease',
           }}
         >
-          ← Return to Command Center
+          ← Return to Trend Hunter
         </Link>
       </div>
     </main>

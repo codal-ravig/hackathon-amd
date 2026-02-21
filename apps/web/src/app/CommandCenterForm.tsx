@@ -132,13 +132,14 @@ function ResultCard({ result }: { result: CampaignResult }) {
     color: 'var(--muted)',
     marginBottom: 4,
   }
-  const divider = <div style={{ width: 1, height: 36, background: 'var(--border)', flexShrink: 0 }} />
+  const divider = <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
   return (
     <div
+      className="glass"
       style={{
-        border: '1px solid rgba(22, 163, 74, 0.45)',
         background: 'rgba(22, 163, 74, 0.04)',
+        border: '1px solid rgba(22, 163, 74, 0.2)',
         padding: '28px 30px',
         animation: 'fade-up 0.45s cubic-bezier(0.16,1,0.3,1) forwards',
       }}
@@ -272,7 +273,7 @@ export function CommandCenterForm(): React.JSX.Element {
 
       {/* Hero headline */}
       <h1 style={{ fontFamily: 'var(--font-display), cursive', fontSize: 'clamp(68px, 13vw, 124px)', lineHeight: 0.88, letterSpacing: '0.01em', textTransform: 'uppercase', color: 'var(--text)', marginBottom: 20, userSelect: 'none' }}>
-        COMMAND<br />CENTER
+        TREND<br />HUNTER
       </h1>
 
       <p style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 11, letterSpacing: '0.08em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 52 }}>
@@ -289,12 +290,19 @@ export function CommandCenterForm(): React.JSX.Element {
         <div style={{ display: 'flex' }}>
           <input
             id="topic"
-            className="cmd-input"
+            className="cmd-input glass-dark"
             type="text"
             value={topic}
             onChange={e => setTopic(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             placeholder="What trend are we attacking today?"
+            style={{
+              background: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              color: '#000',
+              fontWeight: 500,
+            }}
             disabled={isRunning}
             autoComplete="off"
             spellCheck={false}
@@ -304,24 +312,26 @@ export function CommandCenterForm(): React.JSX.Element {
             onClick={handleSubmit}
             disabled={!topic.trim() || isRunning}
             style={{
-              background: isRunning ? 'rgba(230,51,41,0.1)' : !topic.trim() ? 'transparent' : 'var(--red)',
-              borderTop:    `1px solid ${btnBorder}`,
-              borderRight:  `1px solid ${btnBorder}`,
-              borderBottom: `1px solid ${btnBorder}`,
-              borderLeft:   'none',
-              color: isRunning ? 'var(--red)' : !topic.trim() ? 'var(--muted)' : '#fff',
-              fontFamily: 'var(--font-mono), monospace',
-              fontSize: 11,
-              letterSpacing: '0.18em',
+              background: isRunning ? 'rgba(230,51,41,0.6)' : !topic.trim() ? '#E0E0E0' : 'var(--red)',
+              border: 'none',
+              color: '#fff',
+              fontFamily: 'var(--font-display), cursive',
+              fontSize: 20,
+              letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              padding: '16px 26px',
+              padding: '14px 32px',
               cursor: !topic.trim() || isRunning ? 'not-allowed' : 'pointer',
               whiteSpace: 'nowrap',
-              transition: 'background 0.15s, color 0.15s',
+              transition: 'all 0.2s ease',
               borderRadius: 0,
+              boxShadow: !topic.trim() || isRunning ? 'none' : '0 8px 20px rgba(230,51,41,0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: 140,
             }}
           >
-            {isRunning ? '[ RUNNING ]' : '[ DEPLOY ]'}
+            {isRunning ? 'RUNNING...' : 'DEPLOY'}
           </button>
         </div>
       </div>

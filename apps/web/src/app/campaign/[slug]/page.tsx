@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation'
-import { defineQuery, PortableText, type PortableTextComponents } from 'next-sanity'
+import { defineQuery } from 'next-sanity'
 import Link from 'next/link'
 import imageUrlBuilder from '@sanity/image-url'
 import { sanityFetch } from '@/sanity/lib/live'
 import { client } from '@/sanity/lib/client'
+import { ScrollSpyContent } from './ScrollSpyContent'
 
 // ─── Image builder ────────────────────────────────────────────────────────────
 
@@ -29,13 +30,12 @@ const CAMPAIGN_QUERY = defineQuery(`
   }
 `)
 
-// ─── Portable Text components ─────────────────────────────────────────────────
-
-const ptComponents: PortableTextComponents = {
-  block: {
-    normal: ({ children }) => <p className="pt-block">{children}</p>,
-  },
-}
+const NEXT_CAMPAIGN_QUERY = defineQuery(`
+  *[_type == "campaign" && _createdAt < $createdAt] | order(_createdAt desc)[0] {
+    title,
+    slug
+  }
+`)
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
@@ -63,6 +63,13 @@ export default async function CampaignPage({ params }: PageProps) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const campaign = data as any
+
+  const { data: nextData } = await sanityFetch({
+    query: NEXT_CAMPAIGN_QUERY,
+    params: { createdAt: campaign._createdAt }
+  })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const nextMission = nextData as any
 
   // Hero image — full-bleed, large for quality rendering
   const heroImageUrl = campaign.heroImage
@@ -92,7 +99,8 @@ export default async function CampaignPage({ params }: PageProps) {
           font-family: var(--font-mono), monospace;
           font-size: 15px;
           line-height: 2;
-          color: rgba(234, 234, 240, 0.8);
+          color: rgba(26, 26, 46, 0.4);
+          transition: all 0.4s ease;
         }
         .pt-content .pt-block:last-of-type {
           margin-bottom: 0;
@@ -107,6 +115,7 @@ export default async function CampaignPage({ params }: PageProps) {
           font-size: 10px;
           letter-spacing: 0.16em;
           color: var(--muted);
+          transition: all 0.3s ease;
         }
         /* Vertical rule */
         .pt-content .pt-block::after {
@@ -116,17 +125,8 @@ export default async function CampaignPage({ params }: PageProps) {
           top: 0;
           bottom: 0;
           width: 1px;
-          background: var(--border);
-          transition: background 0.3s;
-        }
-        .pt-content .pt-block:first-of-type {
-          color: var(--text);
-        }
-        .pt-content .pt-block:first-of-type::after {
-          background: rgba(230, 51, 41, 0.55);
-        }
-        .pt-content .pt-block:first-of-type::before {
-          color: var(--red);
+          background: rgba(0, 0, 0, 0.08);
+          transition: all 0.5s ease;
         }
 
         /* Acquire button hover */
@@ -231,14 +231,14 @@ export default async function CampaignPage({ params }: PageProps) {
           {/* ── Top vignette (nav legibility) ───────────────────────────── */}
           <div aria-hidden="true" style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: '45%',
-            background: 'linear-gradient(rgba(6,6,14,0.75) 0%, transparent 100%)',
+            background: 'linear-gradient(rgba(255,255,255,0.6) 0%, transparent 100%)',
             pointerEvents: 'none',
           }} />
 
           {/* ── Bottom gradient (title legibility) ──────────────────────── */}
           <div aria-hidden="true" style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: '75%',
-            background: 'linear-gradient(transparent 0%, rgba(6,6,14,0.7) 35%, rgba(6,6,14,0.95) 65%, var(--bg) 100%)',
+            background: 'linear-gradient(transparent 0%, rgba(255,255,255,0.5) 35%, rgba(255,255,255,0.9) 65%, var(--bg) 100%)',
             pointerEvents: 'none',
           }} />
 
@@ -255,18 +255,18 @@ export default async function CampaignPage({ params }: PageProps) {
               <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true">
                 <path d="M13 5H1M1 5L5 1M1 5L5 9" stroke="var(--red)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, letterSpacing: '0.22em', color: 'rgba(234,234,240,0.65)', textTransform: 'uppercase' }}>
-                Command Center
+              <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, letterSpacing: '0.22em', color: 'var(--text)', textTransform: 'uppercase' }}>
+                Trend Hunter
               </span>
             </Link>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               {deployDate && (
-                <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, letterSpacing: '0.16em', color: 'rgba(234,234,240,0.4)', textTransform: 'uppercase' }}>
+                <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, letterSpacing: '0.16em', color: 'var(--muted)', textTransform: 'uppercase' }}>
                   DEPLOYED {deployDate}
                 </span>
               )}
-              <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, letterSpacing: '0.18em', color: 'rgba(230,51,41,0.8)', textTransform: 'uppercase', border: '1px solid rgba(230,51,41,0.35)', padding: '4px 12px' }}>
+              <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, letterSpacing: '0.18em', color: 'var(--red)', textTransform: 'uppercase', border: '1px solid rgba(230,51,41,0.25)', padding: '4px 12px', background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(4px)' }}>
                 CLASSIFIED
               </span>
             </div>
@@ -289,9 +289,8 @@ export default async function CampaignPage({ params }: PageProps) {
               lineHeight: 0.86,
               letterSpacing: '0.01em',
               textTransform: 'uppercase',
-              color: '#fff',
+              color: 'var(--text)',
               margin: '0 0 clamp(20px,3vw,32px)',
-              textShadow: '0 4px 32px rgba(0,0,0,0.6)',
               maxWidth: '80%',
             }}>
               {campaign.title as string}
@@ -303,7 +302,7 @@ export default async function CampaignPage({ params }: PageProps) {
                 fontFamily: 'var(--font-mono), monospace',
                 fontSize: 'clamp(12px, 1.4vw, 15px)',
                 lineHeight: 1.65,
-                color: 'rgba(234,234,240,0.55)',
+                color: 'var(--muted)',
                 fontStyle: 'italic',
                 margin: 0,
                 maxWidth: 540,
@@ -313,7 +312,7 @@ export default async function CampaignPage({ params }: PageProps) {
 
               {/* Price badge */}
               <div style={{ flexShrink: 0, textAlign: 'right' }}>
-                <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.3em', color: 'rgba(234,234,240,0.4)', textTransform: 'uppercase', marginBottom: 6 }}>
+                <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.3em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 6 }}>
                   UNIT PRICE
                 </div>
                 <div style={{
@@ -325,7 +324,7 @@ export default async function CampaignPage({ params }: PageProps) {
                   background: 'var(--red)',
                   padding: '10px 24px',
                   display: 'inline-block',
-                  boxShadow: '0 4px 24px rgba(230,51,41,0.4)',
+                  boxShadow: '0 8px 24px rgba(230,51,41,0.2)',
                 }}>
                   ${(campaign.price as number).toFixed(2)}
                 </div>
@@ -360,9 +359,7 @@ export default async function CampaignPage({ params }: PageProps) {
               </div>
 
               {Array.isArray(campaign.content) && campaign.content.length > 0 ? (
-                <div className="pt-content">
-                  <PortableText value={campaign.content} components={ptComponents} />
-                </div>
+                <ScrollSpyContent content={campaign.content} />
               ) : (
                 <p style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 13, color: 'var(--muted)', fontStyle: 'italic' }}>
                   No brief filed.
@@ -373,17 +370,17 @@ export default async function CampaignPage({ params }: PageProps) {
             {/* ── Right: Metadata sidebar ──────────────────────────────── */}
             <aside style={{ paddingTop: 0 }}>
 
-              <div style={{ position: 'sticky', top: 32, display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid var(--border)', background: 'var(--border)' }}>
+              <div style={{ position: 'sticky', top: 32, display: 'flex', flexDirection: 'column', gap: 1, border: '1px solid var(--border)', background: 'var(--border)', boxShadow: '0 8px 30px rgba(0,0,0,0.05)' }}>
 
                 {/* Section label */}
-                <div style={{ background: 'var(--surface)', padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ background: 'var(--surface)', padding: '14px 20px', borderBottom: '1px solid var(--border)', backdropFilter: 'blur(8px)' }}>
                   <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.26em', color: 'var(--muted)', textTransform: 'uppercase' }}>
                     INTEL FILE
                   </span>
                 </div>
 
                 {/* Price */}
-                <div style={{ background: 'var(--bg)', padding: '20px 20px 18px' }}>
+                <div style={{ background: '#fff', padding: '20px 20px 18px' }}>
                   <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.22em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 8 }}>
                     Unit Price
                   </div>
@@ -393,7 +390,7 @@ export default async function CampaignPage({ params }: PageProps) {
                 </div>
 
                 {/* Slug */}
-                <div style={{ background: 'var(--bg)', padding: '16px 20px' }}>
+                <div style={{ background: '#fff', padding: '16px 20px' }}>
                   <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.22em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 6 }}>
                     Route
                   </div>
@@ -404,7 +401,7 @@ export default async function CampaignPage({ params }: PageProps) {
 
                 {/* Deploy date */}
                 {deployDate && (
-                  <div style={{ background: 'var(--bg)', padding: '16px 20px' }}>
+                  <div style={{ background: '#fff', padding: '16px 20px' }}>
                     <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.22em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 6 }}>
                       Deployed
                     </div>
@@ -415,17 +412,17 @@ export default async function CampaignPage({ params }: PageProps) {
                 )}
 
                 {/* Doc ID */}
-                <div style={{ background: 'var(--bg)', padding: '16px 20px' }}>
+                <div style={{ background: '#fff', padding: '16px 20px' }}>
                   <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.22em', color: 'var(--muted)', textTransform: 'uppercase', marginBottom: 6 }}>
                     Doc ID
                   </div>
-                  <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, color: 'rgba(234,234,240,0.5)', wordBreak: 'break-all', lineHeight: 1.5 }}>
+                  <div style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 10, color: 'var(--muted)', wordBreak: 'break-all', lineHeight: 1.5 }}>
                     {campaign._id as string}
                   </div>
                 </div>
 
                 {/* CTA */}
-                <div style={{ background: 'var(--bg)', padding: '20px' }}>
+                <div style={{ background: '#fff', padding: '20px' }}>
                   <button
                     type="button"
                     className="acquire-btn"
@@ -441,6 +438,7 @@ export default async function CampaignPage({ params }: PageProps) {
                       padding: '16px 20px',
                       cursor: 'pointer',
                       lineHeight: 1,
+                      boxShadow: '0 8px 20px rgba(230,51,41,0.2)',
                     }}
                   >
                     ACQUIRE TARGET
@@ -490,6 +488,7 @@ export default async function CampaignPage({ params }: PageProps) {
                 padding: '22px 52px',
                 cursor: 'pointer',
                 flexShrink: 0,
+                boxShadow: '0 12px 30px rgba(230,51,41,0.25)',
               }}
             >
               ACQUIRE TARGET — ${(campaign.price as number).toFixed(2)}
@@ -516,6 +515,58 @@ export default async function CampaignPage({ params }: PageProps) {
           </Link>
         </footer>
 
+        {/* ─── Sticky Next Mission Banner ──────────────────────────────────── */}
+        {nextMission && (
+          <div style={{
+            position: 'sticky',
+            bottom: 24,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            padding: '0 clamp(24px,5vw,72px)',
+            pointerEvents: 'none',
+          }}>
+            <Link
+              href={`/campaign/${nextMission.slug.current}`}
+              className="glass"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 28px',
+                maxWidth: 600,
+                margin: '0 auto',
+                textDecoration: 'none',
+                pointerEvents: 'auto',
+                border: '1px solid rgba(230,51,41,0.2)',
+                background: 'rgba(255, 255, 255, 0.7)',
+                backdropFilter: 'blur(12px) saturate(180%)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: 9, letterSpacing: '0.22em', color: 'var(--red)', textTransform: 'uppercase' }}>
+                  NEXT MISSION //
+                </span>
+                <span style={{ fontFamily: 'var(--font-display), cursive', fontSize: 18, color: 'var(--text)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  {nextMission.title}
+                </span>
+              </div>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'var(--red)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff',
+                transition: 'transform 0.3s ease',
+              }}>
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="none" aria-hidden="true" style={{ transform: 'rotate(180deg)' }}>
+                  <path d="M13 5H1M1 5L5 1M1 5L5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   )

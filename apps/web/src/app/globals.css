@@ -1,14 +1,62 @@
 @import "tailwindcss";
 
-/* ─── Design tokens ─────────────────────────────────────────── */
+/* ─── Light mode (default) ───────────────────────────────────── */
 :root {
+  --bg:      #F8F9FA;
+  --surface: rgba(255, 255, 255, 0.7);
+  --border:  rgba(0, 0, 0, 0.08);
+  --red:     #E63329;
+  --green:   #16A34A;
+  --text:    #1A1A2E;
+  --muted:   #6C757D;
+
+  --toggle-bg:     rgba(255, 255, 255, 0.75);
+  --toggle-border: rgba(0, 0, 0, 0.1);
+  --toggle-text:   #1A1A2E;
+  --toggle-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Dark mode ─────────────────────────────────────────────── */
+html[data-theme="dark"] {
   --bg:      #06060E;
-  --surface: #0C0C1A;
-  --border:  #1A1A2E;
+  --surface: rgba(12, 12, 26, 0.7);
+  --border:  rgba(255, 255, 255, 0.08);
   --red:     #E63329;
   --green:   #16A34A;
   --text:    #EAEAF0;
   --muted:   #44445C;
+
+  --toggle-bg:     rgba(12, 12, 26, 0.85);
+  --toggle-border: rgba(255, 255, 255, 0.1);
+  --toggle-text:   #EAEAF0;
+  --toggle-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── Glassmorphism ─────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+html[data-theme="dark"] .glass {
+  background: rgba(12, 12, 26, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+}
+
+.glass-dark {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="dark"] .glass-dark {
+  background: rgba(6, 6, 14, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ─── Base ──────────────────────────────────────────────────── */
@@ -21,6 +69,7 @@ body {
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ─── Input ─────────────────────────────────────────────────── */
@@ -33,20 +82,38 @@ body {
   border-right: none;
   color: var(--text);
   font-family: var(--font-mono), monospace;
+  font-weight: 500;
   font-size: 14px;
   padding: 16px 20px;
   outline: none;
   caret-color: var(--red);
   border-radius: 0;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
   -webkit-appearance: none;
   width: 100%;
 }
 
 .cmd-input:focus {
+  border-top-color: rgba(230, 51, 41, 0.3);
+  border-bottom-color: rgba(230, 51, 41, 0.3);
+  border-left-color: rgba(230, 51, 41, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="dark"] .cmd-input {
+  background: rgba(12, 12, 26, 0.8);
+  color: #EAEAF0;
+  border-top-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .cmd-input:focus {
+  background: rgba(12, 12, 26, 0.95);
   border-top-color: rgba(230, 51, 41, 0.5);
   border-bottom-color: rgba(230, 51, 41, 0.5);
   border-left-color: rgba(230, 51, 41, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .cmd-input::placeholder { color: var(--muted); }
@@ -66,4 +133,40 @@ body {
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ─── Theme toggle ───────────────────────────────────────────── */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: var(--toggle-bg);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid var(--toggle-border);
+  box-shadow: var(--toggle-shadow);
+  cursor: pointer;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--toggle-text);
+  transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+  border-radius: 0;
+  outline: none;
+  user-select: none;
+}
+
+.theme-toggle:hover {
+  border-color: rgba(230, 51, 41, 0.35);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
 }
