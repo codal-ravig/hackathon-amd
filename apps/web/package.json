@@ -9,6 +9,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@google/generative-ai": "^0.24.1",
         "@sanity/client": "^7.6.0",
         "@sanity/image-url": "^2.0.3",
         "next": "^16.1.6",
