@@ -132,7 +132,7 @@ function ResultCard({ result }: { result: CampaignResult }) {
     color: 'var(--muted)',
     marginBottom: 4,
   }
-  const divider = <div style={{ width: 1, height: 36, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+  const divider = <div style={{ width: 1, height: 36, background: 'var(--border)', flexShrink: 0 }} />
 
   return (
     <div
@@ -246,6 +246,7 @@ export function CommandCenterForm(): React.JSX.Element {
       await sleep(500)
       patchStep(2, 'done')
       setResult(data)
+      setTopic('')
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
       setError(msg)
@@ -254,12 +255,6 @@ export function CommandCenterForm(): React.JSX.Element {
       setIsRunning(false)
     }
   }
-
-  const btnBorder = isRunning
-    ? 'rgba(230,51,41,0.3)'
-    : !topic.trim()
-    ? 'var(--border)'
-    : 'var(--red)'
 
   return (
     <>
@@ -297,10 +292,10 @@ export function CommandCenterForm(): React.JSX.Element {
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
             placeholder="What trend are we attacking today?"
             style={{
-              background: 'rgba(255, 255, 255, 0.4)',
+              background: 'var(--surface)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
-              color: '#000',
+              color: 'var(--text)',
               fontWeight: 500,
             }}
             disabled={isRunning}
@@ -312,9 +307,9 @@ export function CommandCenterForm(): React.JSX.Element {
             onClick={handleSubmit}
             disabled={!topic.trim() || isRunning}
             style={{
-              background: isRunning ? 'rgba(230,51,41,0.6)' : !topic.trim() ? '#E0E0E0' : 'var(--red)',
+              background: isRunning ? 'rgba(230,51,41,0.6)' : !topic.trim() ? 'var(--border)' : 'var(--red)',
               border: 'none',
-              color: '#fff',
+              color: !topic.trim() && !isRunning ? 'var(--muted)' : '#fff',
               fontFamily: 'var(--font-display), cursive',
               fontSize: 20,
               letterSpacing: '0.06em',
@@ -331,7 +326,7 @@ export function CommandCenterForm(): React.JSX.Element {
               minWidth: 140,
             }}
           >
-            {isRunning ? 'RUNNING...' : 'DEPLOY'}
+            {isRunning ? 'RUNNING...' : 'GENERATE'}
           </button>
         </div>
       </div>

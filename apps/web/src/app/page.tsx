@@ -44,8 +44,8 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
       style={{ textDecoration: 'none', display: 'block' }}
       className="campaign-card"
     >
-      {/* Image */}
-      <div style={{ position: 'relative', overflow: 'hidden', background: '#fff' }}>
+      {/* Image area */}
+      <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface)' }}>
         {thumbUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -67,7 +67,7 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
             style={{
               width: '100%',
               aspectRatio: '16 / 10',
-              background: '#f1f1f4',
+              background: 'var(--surface)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -75,13 +75,12 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
               overflow: 'hidden',
             }}
           >
-            {/* Grid pattern */}
             <div aria-hidden="true" style={{
               position: 'absolute', inset: 0,
-              backgroundImage: 'linear-gradient(rgba(230,51,41,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(230,51,41,0.04) 1px, transparent 1px)',
+              backgroundImage: 'linear-gradient(rgba(230,51,41,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(230,51,41,0.05) 1px, transparent 1px)',
               backgroundSize: '20px 20px',
             }} />
-            <span style={{ fontFamily: 'var(--font-display), cursive', fontSize: 72, color: 'rgba(230,51,41,0.08)', letterSpacing: '0.04em', position: 'relative', zIndex: 1 }}>
+            <span style={{ fontFamily: 'var(--font-display), cursive', fontSize: 72, color: 'rgba(230,51,41,0.12)', letterSpacing: '0.04em', position: 'relative', zIndex: 1 }}>
               {(campaign.title as string).charAt(0).toUpperCase()}
             </span>
           </div>
@@ -90,16 +89,17 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
         {/* Sequence number badge */}
         <div style={{
           position: 'absolute',
-          top: 14,
-          left: 14,
+          top: 12,
+          left: 12,
           fontFamily: 'var(--font-mono), monospace',
           fontSize: 10,
           letterSpacing: '0.18em',
-          color: 'var(--muted)',
-          background: 'rgba(255,255,255,0.85)',
+          color: 'var(--text)',
+          background: 'var(--surface)',
           padding: '4px 10px',
           backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(0,0,0,0.05)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid var(--border)',
         }}>
           {num}
         </div>
@@ -107,8 +107,8 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
         {/* Price badge */}
         <div style={{
           position: 'absolute',
-          top: 14,
-          right: 14,
+          top: 12,
+          right: 12,
           fontFamily: 'var(--font-display), cursive',
           fontSize: 22,
           letterSpacing: '0.02em',
@@ -116,31 +116,22 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
           background: 'var(--red)',
           padding: '4px 14px',
           lineHeight: 1.4,
-          boxShadow: '0 4px 12px rgba(230,51,41,0.25)',
+          boxShadow: '0 4px 12px rgba(230,51,41,0.3)',
         }}>
           ${(campaign.price as number).toFixed(2)}
         </div>
-
-        {/* Bottom gradient */}
-        <div aria-hidden="true" style={{
-          position: 'absolute',
-          bottom: 0, left: 0, right: 0,
-          height: '40%',
-          background: 'linear-gradient(transparent, rgba(255,255,255,0.4))',
-          pointerEvents: 'none',
-        }} />
       </div>
 
       {/* Text content */}
-      <div style={{ padding: '20px 24px 24px', borderTop: '1px solid var(--border)' }}>
+      <div style={{ padding: '18px 20px 20px', borderTop: '1px solid var(--border)' }}>
         <h3 style={{
           fontFamily: 'var(--font-display), cursive',
-          fontSize: 'clamp(22px, 3vw, 28px)',
+          fontSize: 'clamp(20px, 3vw, 26px)',
           letterSpacing: '0.02em',
           textTransform: 'uppercase',
           color: 'var(--text)',
           lineHeight: 1.1,
-          marginBottom: 10,
+          margin: '0 0 8px',
         }}>
           {campaign.title as string}
         </h3>
@@ -151,7 +142,7 @@ function CampaignCard({ campaign, index }: { campaign: any; index: number }) {
           lineHeight: 1.6,
           color: 'var(--muted)',
           fontStyle: 'italic',
-          margin: '0 0 20px',
+          margin: '0 0 16px',
           overflow: 'hidden',
           display: '-webkit-box',
           WebkitLineClamp: 2,
@@ -193,23 +184,28 @@ export default async function Home(): Promise<React.JSX.Element> {
 
       <style>{`
         .campaign-card {
-          background: rgba(255, 255, 255, 0.5);
+          background: var(--surface);
           backdrop-filter: blur(12px) saturate(180%);
           -webkit-backdrop-filter: blur(12px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.5);
+          border: 1px solid var(--border);
           transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
           cursor: pointer;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
         }
         .campaign-card:hover {
-          border-color: rgba(230, 51, 41, 0.3);
-          background: rgba(255, 255, 255, 0.8);
+          border-color: rgba(230, 51, 41, 0.4);
           transform: translateY(-4px);
-          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        }
+        html[data-theme="dark"] .campaign-card {
+          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+        html[data-theme="dark"] .campaign-card:hover {
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
         }
         .campaign-card:hover .campaign-card-img {
-          transform: scale(1.05);
-          filter: brightness(1) contrast(1.05) saturate(1) !important;
+          transform: scale(1.04);
+          filter: brightness(1) contrast(1.04) !important;
         }
       `}</style>
 
@@ -234,7 +230,7 @@ export default async function Home(): Promise<React.JSX.Element> {
           width: '100%',
           maxWidth: 720,
           margin: '0 auto',
-          padding: '80px 24px 80px',
+          padding: '80px 24px',
           position: 'relative',
           zIndex: 1,
         }}
@@ -242,7 +238,7 @@ export default async function Home(): Promise<React.JSX.Element> {
         <CommandCenterForm />
       </div>
 
-      {/* ─── Active Deployments section ───────────────────────────────────────── */}
+      {/* ─── Active Deployments section ─────────────────────────────────────── */}
       {campaignList.length > 0 && (
         <section
           style={{

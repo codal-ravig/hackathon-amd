@@ -81,7 +81,7 @@ export function ScrollSpyContent({ content }: { content: any }) {
               const isActive = activeId === value._key
               return (
                 <p 
-                  className={`pt-block scroll-target ${isActive ? 'is-active' : ''}`} 
+                  className={`pt-block scroll-target is-active`} 
                   data-id={value._key}
                 >
                   {children}
