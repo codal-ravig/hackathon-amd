@@ -9,11 +9,13 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@anthropic-ai/sdk": "^0.78.0",
         "@google/generative-ai": "^0.24.1",
         "@sanity/client": "^7.6.0",
         "@sanity/image-url": "^2.0.3",
         "next": "^16.1.6",
         "next-sanity": "^12.1.0",
+        "openai": "^6.22.0",
         "react": "^19.0.0",
         "react-dom": "^19.0.0"
     },

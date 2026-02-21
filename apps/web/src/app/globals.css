@@ -1,1 +1,69 @@
 @import "tailwindcss";
+
+/* ─── Design tokens ─────────────────────────────────────────── */
+:root {
+  --bg:      #06060E;
+  --surface: #0C0C1A;
+  --border:  #1A1A2E;
+  --red:     #E63329;
+  --green:   #16A34A;
+  --text:    #EAEAF0;
+  --muted:   #44445C;
+}
+
+/* ─── Base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Input ─────────────────────────────────────────────────── */
+.cmd-input {
+  flex: 1;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: none;
+  color: var(--text);
+  font-family: var(--font-mono), monospace;
+  font-size: 14px;
+  padding: 16px 20px;
+  outline: none;
+  caret-color: var(--red);
+  border-radius: 0;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  width: 100%;
+}
+
+.cmd-input:focus {
+  border-top-color: rgba(230, 51, 41, 0.5);
+  border-bottom-color: rgba(230, 51, 41, 0.5);
+  border-left-color: rgba(230, 51, 41, 0.5);
+}
+
+.cmd-input::placeholder { color: var(--muted); }
+.cmd-input:disabled     { opacity: 0.4; cursor: not-allowed; }
+
+/* ─── Keyframes ─────────────────────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1;   transform: scale(1);   }
+  50%       { opacity: 0.3; transform: scale(1.7); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}

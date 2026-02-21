@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 import { writeClient } from '@/sanity/lib/writeClient'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-
-// Inject _key values after parsing — Gemini cannot generate globally unique IDs
-function injectKeys(content: RawBlock[]): SanityBlock[] {
-  return content.map((block, bi) => ({
-    ...block,
-    _key: `block${bi}${Date.now()}`,
-    children: block.children.map((child, ci) => ({
-      ...child,
-      _key: `span${bi}${ci}${Date.now()}`,
-    })),
-  }))
+// Defer client creation so a missing key returns a clean 500 instead of crashing at boot
+function getClient() {
+  const key = process.env.ANTHROPIC_API_KEY
+  if (!key) throw new Error('ANTHROPIC_API_KEY is not set in environment variables')
+  return new Anthropic({ apiKey: key })
 }
+
+// Most cost-effective Claude model: $1/1M input · $5/1M output
+const MODEL = 'claude-haiku-4-5'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RawSpan {
   _type: 'span'
@@ -38,7 +36,7 @@ interface SanityBlock extends Omit<RawBlock, 'children'> {
   children: SanitySpan[]
 }
 
-interface GeminiCampaign {
+interface CampaignPayload {
   _type: 'campaign'
   title: string
   slug: { _type: 'slug'; current: string }
@@ -46,6 +44,22 @@ interface GeminiCampaign {
   price: number
   content: RawBlock[]
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Inject _key values — Claude cannot generate globally unique IDs
+function injectKeys(content: RawBlock[]): SanityBlock[] {
+  return content.map((block, bi) => ({
+    ...block,
+    _key: `block${bi}${Date.now()}`,
+    children: block.children.map((child, ci) => ({
+      ...child,
+      _key: `span${bi}${ci}${Date.now()}`,
+    })),
+  }))
+}
+
+// ─── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
@@ -56,21 +70,16 @@ export async function POST(request: NextRequest) {
 
   const { topic } = body as { topic: string }
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: { responseMimeType: 'application/json' },
-  })
+  const prompt = `Generate a Sanity CMS campaign document for this product topic: "${topic}"
 
-  const prompt = `You are a copywriter for an automated storefront. Generate a Sanity CMS campaign document for the following product topic: "${topic}"
-
-Return ONLY a JSON object that exactly matches this Sanity schema structure:
+Return ONLY a JSON object that exactly matches this Sanity schema:
 
 {
   "_type": "campaign",
   "title": "<compelling product name, 2–6 words>",
   "slug": {
     "_type": "slug",
-    "current": "<URL-safe slug derived from title, lowercase, hyphens only>"
+    "current": "<URL-safe slug, lowercase, hyphens only>"
   },
   "headline": "<punchy marketing tagline, 8–15 words, different from title>",
   "price": <realistic USD price as a JSON number, e.g. 49.99>,
@@ -79,42 +88,58 @@ Return ONLY a JSON object that exactly matches this Sanity schema structure:
       "_type": "block",
       "style": "normal",
       "markDefs": [],
-      "children": [
-        {
-          "_type": "span",
-          "text": "<paragraph text>",
-          "marks": []
-        }
-      ]
+      "children": [{ "_type": "span", "text": "<paragraph text>", "marks": [] }]
     }
   ]
 }
 
-Rules for content:
-- Generate exactly 5 block objects inside "content"
-- Block 1: introduce the problem the product solves
-- Block 2: describe the product and its key features
-- Block 3: highlight the main benefit or transformation
-- Block 4: social proof or use-case scenario
-- Block 5: call to action with urgency
-- All 5 blocks together must total approximately 300 words
-- Each block has exactly one span child with the paragraph text
-- "markDefs" must always be an empty array []
-- "marks" on each span must always be an empty array []
-- "style" on every block must be "normal"
-- Do NOT include "_key" fields — they will be added by the server
-- Do NOT include "heroImage" — it will be uploaded separately
-- price must be a JSON number, NOT a string
-- slug.current must be lowercase with only letters, numbers, and hyphens`
+Rules:
+- Exactly 5 blocks in content (problem → features → benefit → social proof → CTA)
+- All 5 blocks together ≈ 300 words
+- Each block has exactly one span child
+- markDefs and marks must be empty arrays []
+- style must be "normal" on every block
+- Do NOT include _key fields
+- Do NOT include heroImage
+- price must be a JSON number, not a string`
 
-  const result = await model.generateContent(prompt)
-  const raw = result.response.text()
-
-  let payload: GeminiCampaign
+  let raw: string
   try {
-    payload = JSON.parse(raw) as GeminiCampaign
+    const anthropic = getClient()
+    const message = await anthropic.messages.create({
+      model: MODEL,
+      max_tokens: 2048,
+      system: 'You are a JSON generator. Output ONLY valid JSON — no markdown fences, no explanation, no extra text.',
+      messages: [{ role: 'user', content: prompt }],
+    })
+
+    const block = message.content.find(b => b.type === 'text')
+    if (!block || block.type !== 'text') throw new Error('No text in Claude response')
+
+    // Strip any accidental markdown fences Claude might include
+    raw = block.text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+  } catch (err) {
+    if (err instanceof Anthropic.RateLimitError) {
+      return NextResponse.json(
+        { error: 'Claude rate limit reached — try again shortly.' },
+        { status: 429 },
+      )
+    }
+    if (err instanceof Anthropic.AuthenticationError) {
+      return NextResponse.json(
+        { error: 'Invalid ANTHROPIC_API_KEY.' },
+        { status: 401 },
+      )
+    }
+    const detail = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: 'Claude request failed', detail }, { status: 502 })
+  }
+
+  let payload: CampaignPayload
+  try {
+    payload = JSON.parse(raw) as CampaignPayload
   } catch {
-    return NextResponse.json({ error: 'Gemini returned invalid JSON', raw }, { status: 502 })
+    return NextResponse.json({ error: 'Claude returned invalid JSON', raw }, { status: 502 })
   }
 
   const { _type, title, slug, headline, price, content } = payload
@@ -129,26 +154,19 @@ Rules for content:
     content.length === 0
   ) {
     return NextResponse.json(
-      { error: 'Gemini response does not match campaign schema', payload },
+      { error: 'Claude response does not match campaign schema', payload },
       { status: 502 },
     )
   }
 
-  const campaign = {
-    _type,
-    title,
-    slug,
-    headline,
-    price,
-    content: injectKeys(content),
-  }
+  const campaign = { _type, title, slug, headline, price, content: injectKeys(content) }
 
   let created
   try {
     created = await writeClient.create(campaign)
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: 'Sanity write failed', detail: message }, { status: 502 })
+    const detail = err instanceof Error ? err.message : String(err)
+    return NextResponse.json({ error: 'Sanity write failed', detail }, { status: 502 })
   }
 
   return NextResponse.json(created, { status: 201 })
