@@ -7,7 +7,7 @@ export default defineConfig({
     name: 'default',
     title: 'Hackathon',
 
-    projectId: '<your-project-id>',
+    projectId: 'ydqudq1j',
     dataset: 'production',
 
     plugins: [
